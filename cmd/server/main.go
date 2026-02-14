@@ -5,11 +5,9 @@ import (
 	"log"
 	"net"
 	"strconv"
-)
 
-func handleClient(conn net.Conn) {
-	defer conn.Close()
-}
+	"github.com/Cam1G/Landlord-RTS/internal/protocol"
+)
 
 func main() {
 	port := flag.Int("port", 6767, "port to run server on")
@@ -28,6 +26,21 @@ func main() {
 			continue
 		}
 
-		go handleClient(conn)
+		go func(conn net.Conn) {
+			buf := make([]byte, 256)
+			_, err := conn.Read(buf)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			switch buf[0] {
+			case protocol.Auth:
+			default:
+				log.Printf("Unknown message %d\n", buf[0])
+			}
+
+			defer conn.Close()
+		}(conn)
 	}
 }
